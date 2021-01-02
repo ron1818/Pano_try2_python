@@ -303,10 +303,12 @@ def load_imgs():
     # read images
     # image_names = glob("../data/splits/*.jpg")
     # image_names = glob("../data/stitching/boat*.jpg")
-    image_names = glob("../data/test1/DSC_*.jpg")
+    # image_names = glob("../data/test1/DSC_*.jpg")
+    image_names = glob("../data/split_162930/*.jpg")
     imgs = []
     for i in image_names:
         _i = cv.imread(i)
+        _i = cv.rotate(_i, cv.ROTATE_90_CLOCKWISE)
         # _i = cv.resize(_i, (0,0), fx=0.25, fy=0.25)
         imgs.append(_i)
     return imgs, image_names
@@ -563,8 +565,8 @@ def incremental(args):
 
 if __name__ == '__main__':
     # print(__doc__)
-    # main(args)
     # args['warp'] = 'compressedPlaneA2B1'
-    args['features'] = 'brisk'
+    # args['features'] = 'brisk'
     incremental(args)
+    # main(args)
     cv.destroyAllWindows()

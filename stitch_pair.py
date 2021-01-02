@@ -6,12 +6,14 @@ import matplotlib.pyplot as plt
 
 # read images
 # image_names = glob("../data/splits/*.jpg")
-image_names = glob("../data/stitching/boat*.jpg")
+# image_names = glob("../data/stitching/boat*.jpg")
 # image_names = glob("../data/test1/DSC_*.jpg")
+image_names = glob("../data/split_162930/*.jpg")
 imgs = []
 for i in image_names:
     _i = cv2.imread(i)
-    _i = cv2.resize(_i, (0,0), fx=0.5, fy=0.5)
+    _i = cv2.rotate(_i, cv2.ROTATE_90_CLOCKWISE)
+    # _i = cv2.resize(_i, (0,0), fx=0.5, fy=0.5)
     imgs.append(_i)
 
 
@@ -48,6 +50,11 @@ def stitch_pair_sequence(imgs):
 def stitch_incremental(imgs):
     """ stitch imgs incrementally based on time stamps """
     stitcher = cv2.Stitcher_create(mode=cv2.STITCHER_PANORAMA)
+    stitcher.setPanoConfidenceThresh(0.3)
+    # stitcher.setRegistrationResol(0.6)
+    # stitcher.setSeamEstimationResol(0.1)
+    # stitcher.setCompositingResol(0.3)
+
     for t in range(2, len(imgs)):
         status, stitched  = stitcher.stitch(imgs[:t])
         # cv2.imshow("tile_{}".format(t), cv2.hconcat(imgs[:t]))
@@ -62,6 +69,11 @@ def stitch_window(imgs):
     """ stitch img t-1 and img t paste """
     stitcher = cv2.Stitcher_create(mode=cv2.STITCHER_PANORAMA)
     # first stitch
+    stitcher.setPanoConfidenceThresh(0.3)
+    stitcher.setRegistrationResol(0.6)
+    stitcher.setSeamEstimationResol(0.1)
+    stitcher.setCompositingResol(0.3)
+
     status, stitched  = stitcher.stitch(imgs[:2])
     if(status == 0):
         cv2.imshow("stitched_{}".format(2), stitched)
@@ -103,6 +115,11 @@ def stitch_window(imgs):
 
 def stitch_all(imgs):
     stitcher = cv2.Stitcher_create(mode=cv2.STITCHER_PANORAMA)
+    stitcher.setPanoConfidenceThresh(0.3)
+    stitcher.setRegistrationResol(0.6)
+    stitcher.setSeamEstimationResol(0.1)
+    stitcher.setCompositingResol(0.3)
+
     status, stitched  = stitcher.stitch(imgs)
     if(status == 0):
         cv2.imshow("stitched", stitched)
@@ -124,6 +141,6 @@ def stitch_debug(imgs):
 if __name__ == "__main__":
     # stitch_pair_sequence(imgs)
     # stitch_incremental(imgs)
-    # stitch_all(imgs)
-    stitch_window(imgs)
+    stitch_all(imgs)
+    # stitch_window(imgs)
     # stitch_debug(imgs)
