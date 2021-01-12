@@ -245,7 +245,7 @@ args.add_argument( 'ba', list(BA_COST_CHOICES.keys())[0])
 args.add_argument( 'ba_refine_mask', 'xxxxx')
 args.add_argument( 'wave_correct', WAVE_CORRECT_CHOICES[0])
 args.add_argument( 'save_graph', None)
-args.add_argument( 'warp', WARP_CHOICES[0])
+args.add_argument( 'warp', WARP_CHOICES[3])
 args.add_argument( 'seam_megapix', 0.1)
 args.add_argument( 'seam', list(SEAM_FIND_CHOICES.keys())[0])
 args.add_argument( 'compose_megapix', -1)
@@ -253,8 +253,8 @@ args.add_argument( 'expos_comp', list(EXPOS_COMP_CHOICES.keys())[0])
 args.add_argument( 'expos_comp_nr_feeds', 1)
 args.add_argument( 'expos_comp_nr_filtering', 2)
 args.add_argument( 'expos_comp_block_size', 32)
-args.add_argument( 'blend', BLEND_CHOICES[0])
-args.add_argument( 'blend_strength', 1)
+args.add_argument( 'blend', BLEND_CHOICES[2])
+args.add_argument( 'blend_strength', 0.5)
 args.add_argument( 'output', 'result.jpg')
 args.add_argument( 'timelapse', None)
 args.add_argument( 'rangewidth', -1)
@@ -302,9 +302,10 @@ from glob import glob
 def load_imgs():
     # read images
     # image_names = glob("../data/splits/*.jpg")
-    # image_names = glob("../data/stitching/boat*.jpg")
+    # image_names = glob("../../data/stitching/boat*.jpg")
+    # image_names = glob("../../data/keyframe_fine/*.jpg")
     # image_names = glob("../data/test1/DSC_*.jpg")
-    image_names = glob("../data/split_162930/*.jpg")
+    image_names = glob("../../data/keyframe_162930/*.jpg")
     imgs = []
     for i in image_names:
         _i = cv.imread(i)
@@ -392,6 +393,11 @@ def _main(args, imgs, img_names):
         img_subset.append(images[indices[i, 0]])
         full_img_sizes_subset.append(full_img_sizes[indices[i, 0]])
     images = img_subset
+    # cv.imshow("1", images[0])
+    # cv.imshow("2", images[1])
+    # cv.waitKey()
+    # cv.destroyAllWindows()
+
     # img_names = img_names_subset
     full_img_sizes = full_img_sizes_subset
     num_images = len(images)
@@ -464,6 +470,11 @@ def _main(args, imgs, img_names):
         p, mask_wp = warper.warp(masks[idx], K, cameras[idx].R, cv.INTER_NEAREST, cv.BORDER_CONSTANT)
         masks_warped.append(mask_wp.get())
 
+    cv.imshow('0', images_warped[0])
+    cv.imshow('1', images_warped[1])
+    cv.waitKey()
+    cv.destroyAllWindows()
+
     images_warped_f = []
     for img in images_warped:
         imgf = img.astype(np.float32)
@@ -479,9 +490,14 @@ def _main(args, imgs, img_names):
     sizes = []
     blender = None
     timelapser = None
+    # change to read image from input, no need to reload
+    for idx, i in enumerate(imgs):
+        full_img = i
+
     # https://github.com/opencv/opencv/blob/master/samples/cpp/stitching_detailed.cpp#L725 ?
-    for idx, name in enumerate(img_names):
-        full_img = cv.imread(name)
+    # for idx, name in enumerate(img_names):
+        # _full_img = cv.imread(name)
+        # full_img = cv.rotate(_full_img, cv.ROTATE_90_CLOCKWISE)
         if not is_compose_scale_set:
             if compose_megapix > 0:
                 compose_scale = min(1.0, np.sqrt(compose_megapix * 1e6 / (full_img.shape[0] * full_img.shape[1])))
@@ -549,7 +565,8 @@ def _main(args, imgs, img_names):
         dst = cv.normalize(src=result, dst=None, alpha=255., norm_type=cv.NORM_MINMAX, dtype=cv.CV_8U)
         dst = cv.resize(dst, dsize=None, fx=zoom_x, fy=zoom_x)
         cv.imshow(result_name, dst)
-        cv.waitKey(1000)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
         return result
 
     print("Done")
@@ -566,7 +583,7 @@ def incremental(args):
 if __name__ == '__main__':
     # print(__doc__)
     # args['warp'] = 'compressedPlaneA2B1'
-    # args['features'] = 'brisk'
+    args['features'] = 'brisk'
     incremental(args)
     # main(args)
     cv.destroyAllWindows()
